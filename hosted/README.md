@@ -15,7 +15,7 @@ The Next.js application in this directory replaces the blueprint-only experience
 ## Current external resources
 
 - Supabase project: `hqfocxsdqurvjooibcbe`; workspace, billing, and connection migrations are applied.
-- Vercel project: `prj_RMsx865pYbdirUUb9oItNaX8zw7w` (`agentsketch`). Team: `team_9fOwP9EdXurUD0MkJxXxT2fl`. Team-access consent still blocks deployment. The GitHub login connection also needs linking if automatic Git-based deployments are desired.
+- Vercel project: `prj_RMsx865pYbdirUUb9oItNaX8zw7w` (`agentsketch`). Team: `team_9fOwP9EdXurUD0MkJxXxT2fl`. Production is deployed at https://agentsketch-jimmyhmcquade-7436.vercel.app. Preview deployment protection remains enabled. The GitHub login connection also needs linking if automatic Git-based deployments are desired.
 - Stripe sandbox: `acct_1T7NUlFuXgEJM2Ca`. Test Pro price: `price_1UVvHkFuXgEJM2CaPWSBVfPt`, USD 19/month. No live charges are enabled.
 
 ## Deployment configuration
@@ -35,7 +35,7 @@ Copy `.env.example` into environment configuration. Public Supabase URL and publ
 | `BILLING_LIVE_ENABLED` | Keep `false` during testing. Live mode requires explicit live keys, price, webhook, and this flag. |
 | `AGENT_BASE_URL` | Optional explicit eve service origin for local/non-Vercel setups. Vercel uses its deployment origin by default. |
 
-Vercel's project OIDC authenticates model requests to AI Gateway; model credits/access still need verification in the deployed environment. ChatGPT subscription credits and ChatGPT app connections are not automatically usable by this website.
+Vercel's project OIDC authenticates model requests to AI Gateway; the hosted execution test reached AI Gateway but was rejected with `customer_verification_required`: the Vercel team must add a payment card to activate model access. ChatGPT subscription credits and ChatGPT app connections are not automatically usable by this website.
 
 Configure Supabase's site URL and redirect allowlist for the final app origin so confirmation and recovery links return correctly. Verify email delivery; production signup may require custom SMTP.
 
@@ -61,3 +61,7 @@ Unit tests use mocked provider responses. The HTTP smoke test uses local-only fa
 The local eve build can report no sandbox provider outside Vercel/Docker. Default filesystem/shell tools are disabled, and the authored tools do not request a sandbox. Verify the production agent service health and a real bounded run after deployment.
 
 The billing-event table intentionally has RLS enabled without user policies: only the service role can access it. The database advisor reports this as informational, not a missing user-access grant.
+
+## Hosted verification — October 29, 2026
+
+Production build and public site access passed. A disposable confirmed Supabase account signed in and saved an agent successfully, then was signed out and deleted. The signed Stripe webhook returned 200, and a customer portal session was created successfully. Sandbox webhook `we_1UW09NFuXgEJM2CamtZbv2XA` and default portal configuration `bpc_1UW0AaFuXgEJM2CaVHBLzBk9` are configured. No payment was made. The real agent run is blocked by Vercel AI Gateway payment-card verification. Checkout was rejected with `StripePermissionError / more_permissions_required`: enable Checkout Sessions Write (`checkout_session_write`) on the configured sandbox restricted key. Supabase email redirect configuration remains pending. Set Site URL to `https://agentsketch-jimmyhmcquade-7436.vercel.app` and allow redirects to that origin. The browser dashboard requires Supabase sign-in; the connector does not expose Auth URL settings.

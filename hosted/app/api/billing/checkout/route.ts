@@ -17,5 +17,5 @@ export async function POST(request:Request){
   if(subscriptions.data.some(s=>['active','trialing','past_due','unpaid','incomplete','paused'].includes(s.status)))return Response.json({error:'An existing subscription needs attention. Use Manage subscription.'},{status:409});
   const checkout=await stripe.checkout.sessions.create({mode:'subscription',customer,line_items:[{price:process.env.STRIPE_PRO_PRICE_ID!,quantity:1}],client_reference_id:user.id,metadata:{user_id:user.id},subscription_data:{metadata:{user_id:user.id}},success_url:`${billingOrigin()}/?billing=success`,cancel_url:`${billingOrigin()}/?billing=cancelled`,integration_identifier:'agentsketch_checkout_qmbvtrsa'},{idempotencyKey:`agentsketch-checkout-${user.id}-${Math.floor(Date.now()/1800000)}`});
   return Response.json({url:checkout.url});
- }catch{return Response.json({error:'Checkout could not be started. Please try again later.'},{status:502})}
+ }catch(error){const failure=error as {type?:string;code?:string;param?:string;statusCode?:number;message?:string};console.error('Checkout failed',{type:failure.type,code:failure.code,param:failure.param,statusCode:failure.statusCode,message:failure.message?.replace(/(?:sk|rk)_(?:test|live)_[A-Za-z0-9]+/g,'[redacted]')});return Response.json({error:'Checkout could not be started. Please try again later.'},{status:502})}
 }
