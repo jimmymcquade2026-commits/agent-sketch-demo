@@ -1,0 +1,12 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {encryptToken,decryptToken} from '../lib/credential-vault.ts';
+import {readConnection} from '../lib/connection-source.ts';
+const secret='a-test-only-secret-at-least-32-bytes-long';
+test('credentials round trip without plaintext storage',()=>{const value=encryptToken('private-token','owner-a','slack',secret);assert.ok(!value.includes('private-token'));assert.equal(decryptToken(value,'owner-a','slack',secret),'private-token')});
+test('credentials cannot be moved between users or providers',()=>{const value=encryptToken('private-token','owner-a','slack',secret);assert.throws(()=>decryptToken(value,'owner-b','slack',secret));assert.throws(()=>decryptToken(value,'owner-a','airtable',secret));assert.throws(()=>decryptToken(value,'owner-a','slack',secret+'changed'))});
+test('encryption is randomized and fails without a strong runtime secret',()=>{assert.notEqual(encryptToken('t','a','slack',secret),encryptToken('t','a','slack',secret));assert.throws(()=>encryptToken('t','a','slack','short'))});
+test('resource input cannot redirect credentials to arbitrary servers',async()=>{await assert.rejects(()=>readConnection({provider:'github_private',resource:'https://evil.invalid/repo',token:'secret'},async()=>assert.fail('No network call allowed')))});
+test('Slack rejects a provider-level authentication error',async()=>{await assert.rejects(()=>readConnection({provider:'slack',resource:'C0123456789',token:'secret'},async()=>Response.json({ok:false,error:'invalid_auth'})))});
+test('Slack sends only a fixed read-only request with bounded results',async()=>{let seen=false;const result=await readConnection({provider:'slack',resource:'C0123456789',token:'secret'},async(url,options)=>{assert.equal(new URL(String(url)).hostname,'slack.com');assert.equal(options?.redirect,'error');assert.equal(new URL(String(url)).searchParams.get('limit'),'15');seen=true;return Response.json({ok:true,messages:[{text:'hello',ts:'1'}]})});assert.ok(seen);assert.equal(result.items?.length,1);assert.ok(!JSON.stringify(result).includes('secret'))});
+test('Airtable data includes a limited-snapshot notice',async()=>{const result=await readConnection({provider:'airtable',resource:'appExample123/tblExample123',token:'secret'},async()=>Response.json({records:[{id:'rec1',fields:{Name:'Example'}}]}));assert.match(result.scope,/not the complete table/)});
