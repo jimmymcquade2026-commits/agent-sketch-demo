@@ -9,7 +9,7 @@ try{
  let ready=false;
  for(let attempt=0;attempt<100;attempt++){try{if((await fetch(origin+'/api/status')).ok){ready=true;break}}catch{}await new Promise(resolve=>setTimeout(resolve,200))}
  assert.ok(ready,'Server did not start: '+logs.slice(-2000));
- const homepage=await fetch(origin);assert.equal(homepage.status,200);assert.match(await homepage.text(),/Ready for real work/);
+ const homepage=await fetch(origin);assert.equal(homepage.status,200);assert.match(await homepage.text(),/One simple step at a time/);
  for(const path of ['/api/run','/api/billing/checkout','/api/billing/portal']){assert.equal((await fetch(origin+path,{method:'POST'})).status,401,path+' must require authentication')}
  assert.equal((await fetch(origin+'/api/connections')).status,401);
  assert.equal((await fetch(origin+'/api/account')).status,401);
