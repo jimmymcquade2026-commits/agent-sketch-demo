@@ -12,6 +12,8 @@ try{
  const homepage=await fetch(origin);assert.equal(homepage.status,200);assert.match(await homepage.text(),/Ready for real work/);
  for(const path of ['/api/run','/api/billing/checkout','/api/billing/portal']){assert.equal((await fetch(origin+path,{method:'POST'})).status,401,path+' must require authentication')}
  assert.equal((await fetch(origin+'/api/connections')).status,401);
+ assert.equal((await fetch(origin+'/api/account')).status,401);
+ assert.equal((await fetch(origin+'/api/account',{method:'DELETE'})).status,401);
  assert.equal((await fetch(origin+'/api/connections',{method:'DELETE'})).status,401);
  assert.equal((await fetch(origin+'/api/run',{method:'POST',headers:{authorization:'Bearer invalid'}})).status,503,'unconfigured execution must fail closed');
  assert.equal((await fetch(origin+'/api/billing/webhook',{method:'POST',body:'{}'})).status,400,'unsigned webhook');
