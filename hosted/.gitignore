@@ -10,3 +10,6 @@ dist
 *.tsbuildinfo
 
 !.env.example
+
+# Supabase CLI generated state
+supabase/.temp/

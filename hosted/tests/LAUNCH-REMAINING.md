@@ -4,7 +4,7 @@
 Confirmation and password-reset delivery to the owner were verified; the owner also completed password recovery successfully. Custom production email setup remains open. Choose a sender domain and email provider, configure domain verification and Supabase SMTP, then verify delivery to a non-team account. Do not treat current owner delivery as proof that public signup email works.
 
 ## Step 4: private app connection acceptance — waiting on credentials
-Ten provider/encryption/access-failure checks run locally with fake credentials. Live private GitHub, Slack, and Airtable reads remain unverified. The owner's workspace received test Pro via a real Stripe sandbox subscription and webhook (no real charge), configured to cancel at the period end. GitHub test issue #1 exists. Dedicated app tokens remain needed. Do not reuse ChatGPT connector credentials.
+Ten provider/encryption/access-failure checks run locally with fake credentials. Live private GitHub, Slack, and Airtable reads remain unverified. The owner's workspace received legacy test Pro via a real Stripe sandbox subscription and webhook (no real charge), configured to cancel at the period end. GitHub test issue #1 exists. Dedicated app tokens remain needed. Do not reuse ChatGPT connector credentials.
 
 - GitHub: one test repository with an issue; fine-grained token limited to that repository with Issues read access.
 - Slack: a test channel with a message; a dedicated bot token with the appropriate channel-history scope, and bot membership in that channel.
@@ -28,9 +28,12 @@ Finish Stripe renewal/failure tests, launch policies/support, owner-selected mon
 - Stripe test clock creation succeeded, but the connector does not expose clock advance/retrieve operations. Resetting another disposable subscription's billing anchor produced no renewal invoice, so renewal and failed-renewal simulation remain unverified. No subscription was created on the clock; that labeled sandbox fixture expires automatically. All non-clock QA subscriptions were canceled; disposable Supabase accounts, dependent app records, and temporary local credentials were removed. Canceled Stripe audit records remain in the sandbox.
 
 ## Owner actions at the end
-1. Enter dedicated read-only GitHub, Slack, and Airtable tokens/resources in AgentSketch. Live source-grounded reads and disconnect behavior can then be checked. Tokens must not be pasted into chat.
+1. Enter dedicated read-only GitHub, Slack, and Airtable tokens/resources in AgentSketch. Live source-grounded reads and disconnect behavior can then be checked. Plus and Pro are eligible; the existing legacy Pro remains eligible. Tokens must not be pasted into chat.
 2. Choose/control a sender domain and an email provider; verify DNS and connect SMTP for non-team signup delivery.
 3. Complete Stripe live onboarding only when ready; confirm tax obligations, support/business details, final policies, refund terms, and billing-risk handling before enabling real charges.
 4. Provide access to Stripe test-clock advancement or run the dashboard's simulated renewal and payment-failure flows. Browser Checkout is already verified.
 5. Connect the existing Vercel agentsketch project to the repository using root hosted and review production branch/check gates. The GitHub tests are separate from deployment linking.
 6. Choose a spending alert threshold, monitoring destination, backup retention/recovery plan, and review Supabase leaked-password protection. No paid observability, backup upgrade, domain, or credit purchase was enabled.
+
+## Launch pricing update
+$69 once per workspace, then Starter $9/month (100 attempts), Plus $19/month (400), or Pro $39/month (1,000), with server-enforced daily and monthly limits. Five free preview attempts per UTC calendar month. Existing Pro terms are preserved. See PRICING-COSTS.md for current provider costs, margins, checkout rules, and commercial-hosting requirements. No infrastructure upgrade or live payment activation was purchased.

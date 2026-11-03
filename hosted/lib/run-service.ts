@@ -1,4 +1,5 @@
 import {runInput} from './validation.ts';
+import {buildPrompt,PromptBudgetError} from './cost-policy.ts';
 export type AgentRecord={id:string;name:string;instructions:string;knowledge:string;user_id?:string;apps?:string[]};
 export type RunRecord={id:string;agent_name:string;input:string;output:string;status:'running'|'completed'|'failed';created_at:string};
 export type RunStore={
@@ -36,8 +37,10 @@ export function createRunHandler(deps:{configured:()=>boolean;store:(token:strin
    const found=await store.findAgent(body.agentId);
    if(!found)return Response.json({error:'Agent not found.'},{status:404});
    agent=found;
+   buildPrompt(agent,body.input);
    run=await store.reserve(agent,body.input,body.requestId);
   }catch(e){
+   if(e instanceof PromptBudgetError)return Response.json({error:e.message},{status:413});
    // Another request can win the unique idempotency key while this one waits for the quota lock.
    const prior=await store.findRun(body.requestId).catch(()=>null);
    if(prior)return Response.json({run:prior},{status:prior.status==='running'?202:200});

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import Stripe from 'stripe';
 const port=3187, origin=`http://127.0.0.1:${port}`;
 const secret='whsec_local_test_fixture';
-const child=spawn(process.execPath,['node_modules/next/dist/bin/next','start','--hostname','127.0.0.1','--port',String(port)],{env:{...process.env,NEXT_PUBLIC_SUPABASE_URL:'https://example.supabase.co',NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:'local_fixture_only',STRIPE_SECRET_KEY:'rk_test_local_fixture',STRIPE_WEBHOOK_SECRET:secret,STRIPE_PRO_PRICE_ID:'price_local_fixture',SUPABASE_SECRET_KEY:'local_fixture_only',APP_URL:origin,AGENT_RUNTIME_SECRET:'',AGENT_BASE_URL:'',VERCEL_URL:''},stdio:['ignore','pipe','pipe']});
+const child=spawn(process.execPath,['node_modules/next/dist/bin/next','start','--hostname','127.0.0.1','--port',String(port)],{env:{...process.env,NEXT_PUBLIC_SUPABASE_URL:'https://example.supabase.co',NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:'local_fixture_only',STRIPE_SECRET_KEY:'rk_test_local_fixture',STRIPE_WEBHOOK_SECRET:secret,STRIPE_PRO_PRICE_ID:'price_local_fixture',STRIPE_LAUNCH_PRICE_ID:'price_launch',STRIPE_STARTER_PRICE_ID:'price_starter',STRIPE_PLUS_PRICE_ID:'price_plus',STRIPE_SCALE_PRICE_ID:'price_scale',SUPABASE_SECRET_KEY:'local_fixture_only',APP_URL:origin,AGENT_RUNTIME_SECRET:'',AGENT_BASE_URL:'',VERCEL_URL:''},stdio:['ignore','pipe','pipe']});
 let logs='';child.stdout.on('data',b=>logs+=b);child.stderr.on('data',b=>logs+=b);
 try{
  let ready=false;

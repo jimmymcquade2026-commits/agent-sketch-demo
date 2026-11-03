@@ -13,7 +13,7 @@ end $$;
 select set_config('request.jwt.claim.sub','a0000000-0000-4000-8000-000000000002',true);
 do $$ begin if exists(select 1 from public.agents) then raise exception 'TEST FAILED cross-user read'; end if; if exists(select provider from public.connections) then raise exception 'TEST FAILED cross-user connection'; end if; end $$;
 select set_config('request.jwt.claim.sub','a0000000-0000-4000-8000-000000000001',true);
-insert into public.runs(agent_id,agent_name,input,idempotency_key) select a.id,a.name,'Test task',gen_random_uuid() from public.agents a cross join generate_series(1,10);
+insert into public.runs(agent_id,agent_name,input,idempotency_key) select a.id,a.name,'Test task',gen_random_uuid() from public.agents a cross join generate_series(1,3);
 do $$ begin
  begin insert into public.runs(agent_id,agent_name,input,idempotency_key) select id,name,'Over limit',gen_random_uuid() from public.agents; raise exception 'TEST FAILED run quota'; exception when raise_exception then if sqlerrm not like 'Plan limit reached%' then raise; end if; end;
  begin update public.runs set created_at=now()-interval '1 day'; raise exception 'TEST FAILED tampering allowed'; exception when insufficient_privilege then null; end;

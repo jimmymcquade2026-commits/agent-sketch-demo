@@ -3,7 +3,7 @@
 ## Health and errors
 - Check `/api/health`: 200 means the database is reachable; 503 means workspace access is degraded. This does not test AI-provider availability.
 - Check `/api/status` for configuration gates and test/live billing mode. Neither route returns secrets or account data.
-- Vercel function logs record `run_started`, `run_completed`, `run_failed`, and `run_history_failed` with elapsed milliseconds only. They deliberately omit prompts, outputs, tokens, email addresses, and provider error bodies.
+- Vercel function logs record `run_started`, `run_completed`, `run_failed`, and `run_history_failed` with elapsed milliseconds only. They deliberately omit prompts, outputs, credential tokens, email addresses, and provider error bodies. A separate model_usage event records numeric input/output token counts.
 - A `run_history_failed` event means a result reached the browser but was not stored. Have the customer download the visible output before leaving; do not rerun automatically.
 - Vercel Hobby retains a short runtime-log window. A 15-minute query worked during verification. No external alert destination or long-term log drain is configured yet.
 
@@ -11,7 +11,7 @@
 Set `AGENT_RUNS_ENABLED=false` in the project's production environment and redeploy. Verify `/api/status` reports executionConfigured=false. New requests are rejected before authentication/reservation/model execution. Accounts, saved agents, existing results, and exports remain available. Restore true and redeploy when ready.
 
 ## Usage and spending
-The app enforces daily per-account attempt limits before execution, idempotency for retries, a 145-second delivery wait with session cancellation, and agent output/time/usage limits. These are safeguards, not a guaranteed dollar ceiling: model usage limits are checked during execution and can overshoot a threshold. The team-level AI Gateway free credits are shared. Paid top-ups were not enabled during setup. Before public launch, the owner should confirm payment/top-up settings and choose a team spending alert threshold in Vercel. Do not promise unlimited AI capacity.
+The app enforces daily and UTC calendar-month attempt limits in the database (legacy Pro keeps its daily allowance), idempotency for retries, a 24 KB prompt budget, a hard 2,000 output-token request cap, a 60-second abort, and zero SDK retries. Hosted execution uses one AI SDK / Gateway generation with no tool loop. These safeguards are not a guaranteed dollar ceiling; monitor provider and platform billing. See PRICING-COSTS.md. The team-level AI Gateway free credits are shared. Paid top-ups were not enabled during setup. Before public launch, the owner should confirm payment/top-up settings and choose a team spending alert threshold in Vercel. Do not promise unlimited AI capacity.
 
 ## Deployment and rollback
 The repository's `Hosted app checks` GitHub Action runs the tests, production build, and local HTTP smoke checks on reviewed changes without deployment secrets. CI cannot yet gate Vercel production because the project's GitHub login/Git integration still needs the owner to connect it. When linking the existing agentsketch project, select repository jimmymcquade2026-commits/agent-sketch-demo and root directory hosted. Do not create another Vercel project. Preserve production aliases, OIDC, and preview protection.

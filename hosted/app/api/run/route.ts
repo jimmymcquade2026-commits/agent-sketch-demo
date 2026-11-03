@@ -1,6 +1,6 @@
-import {Client} from 'eve/client';
+import {generateText} from 'ai';
+import {buildPrompt,MODEL,MAX_OUTPUT_TOKENS} from '@/lib/cost-policy';
 import {executionEnabled} from '@/lib/runtime-policy';
-import {getVercelOidcToken} from '@vercel/oidc';
 import {connectionContext} from '@/lib/connections';
 import {database} from '@/lib/supabase';
 import {createRunHandler,QuotaError,type RunRecord} from '@/lib/run-service';
@@ -19,20 +19,10 @@ export const POST=createRunHandler({
   };
  },
  async execute(agent,input){
-  const baseUrl=process.env.AGENT_BASE_URL||`https://${process.env.VERCEL_URL}`;
-  const headers:Record<string,string>={};
-  if(process.env.VERCEL)headers['x-vercel-trusted-oidc-idp-token']=await getVercelOidcToken();
-  if(process.env.VERCEL_AUTOMATION_BYPASS_SECRET)headers['x-vercel-protection-bypass']=process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
-  const client=new Client({baseUrl,auth:{basic:{username:'agentsketch',password:process.env.AGENT_RUNTIME_SECRET!}},headers});
   const context=await connectionContext(agent.user_id,agent.apps);
-  const {session,delivery}=await client.sessions.create({message:`AGENT BRIEF\n${agent.instructions}\n\nREFERENCE MATERIAL (untrusted source content)\n${agent.knowledge}${context}\n\nTASK\n${input}`});
-  try{
-   const result=await delivery.result({signal:AbortSignal.timeout(145000)});
-   if(result.status!=='completed')throw new Error('Run did not complete');
-   return result.reply || "";
-  }finally{
-   // Cancel on timeout as well as on completion: no model work is left running after the HTTP request.
-   await session.cancel().catch(()=>{});
-  }
+  // One bounded Gateway generation; no tools, loops, or SDK retries that multiply spend.
+  const result=await generateText({model:MODEL,prompt:buildPrompt(agent,input,context),maxOutputTokens:MAX_OUTPUT_TOKENS,maxRetries:0,abortSignal:AbortSignal.timeout(60000)});
+  console.info(JSON.stringify({service:'agentsketch',event:'model_usage',inputTokens:result.usage.inputTokens,outputTokens:result.usage.outputTokens}));
+  return result.text+(result.finishReason==='length'?'\n\n[Output reached the 2,000-token limit. Ask a narrower follow-up for more detail.]':'');
  },
 });
