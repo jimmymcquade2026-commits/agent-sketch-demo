@@ -17,11 +17,13 @@ export async function readLimitedJson(request:Pick<Request,'body'>,limit=100000)
  const all=new Uint8Array(total);let offset=0;for(const chunk of chunks){all.set(chunk,offset);offset+=chunk.length}
  return JSON.parse(new TextDecoder().decode(all));
 }
-export function createRunHandler(deps:{configured:()=>boolean;store:(token:string)=>RunStore;execute:(agent:AgentRecord,input:string)=>Promise<string>}){
+export function createRunHandler(deps:{configured:()=>boolean;store:(token:string)=>RunStore;execute:(agent:AgentRecord,input:string)=>Promise<string>;observe?:(event:{event:string;durationMs:number})=>void}){
  return async function POST(request:Request){
+  const started=Date.now();
+  const observe=(event:string)=>{try{deps.observe?.({event,durationMs:Date.now()-started})}catch{}};
   const token=request.headers.get('authorization')?.match(/^Bearer (.+)$/)?.[1];
   if(!token)return Response.json({error:'Sign in to run your agent.'},{status:401});
-  if(!deps.configured())return Response.json({error:'Hosted execution is awaiting deployment configuration. Your saved agent is ready; no run was charged.'},{status:503});
+  if(!deps.configured())return Response.json({error:'Hosted execution is temporarily unavailable. Your saved agent is ready; no run was charged.'},{status:503});
   const store=deps.store(token);
   try{if(!await store.authenticate(token))return Response.json({error:'Your session expired. Sign in again.'},{status:401})}catch{return Response.json({error:'Account verification is temporarily unavailable.'},{status:503})}
   let body;
@@ -42,14 +44,16 @@ export function createRunHandler(deps:{configured:()=>boolean;store:(token:strin
    return Response.json({error:e instanceof QuotaError?e.message:'This run could not be reserved. Refresh your history before retrying.'},{status:e instanceof QuotaError?429:503});
   }
   let output:string;
+  observe('run_started');
   try{output=await deps.execute(agent,body.input);if(!output.trim())throw new Error('Empty result')}
   catch{
+   observe('run_failed');
    const output='Execution could not complete. Review run history before trying again.';
    const failed=await store.finish(run.id,'failed',output).catch(()=>({...run,status:'failed' as const,output}));
    return Response.json({error:output,run:failed},{status:502});
   }
   if(output.length>100000)output=output.slice(0,99920)+'\n\n[Result truncated to the workspace storage limit.]';
-  try{return Response.json({run:await store.finish(run.id,'completed',output)})}
-  catch{return Response.json({run:{...run,status:'completed',output},warning:'Your result is ready, but history could not be updated. Download it now; do not rerun the task.'})}
+  try{const finished=await store.finish(run.id,'completed',output);observe('run_completed');return Response.json({run:finished})}
+  catch{observe('run_history_failed');return Response.json({run:{...run,status:'completed',output},warning:'Your result is ready, but history could not be updated. Download it now; do not rerun the task.'})}
  }
 }

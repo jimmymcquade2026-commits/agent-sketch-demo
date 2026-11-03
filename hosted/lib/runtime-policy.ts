@@ -1,0 +1,1 @@
+export function executionEnabled(env:Record<string,string|undefined>=process.env){return env.AGENT_RUNS_ENABLED!=='false'&&Boolean(env.NEXT_PUBLIC_SUPABASE_URL&&env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY&&env.AGENT_RUNTIME_SECRET&&(env.AGENT_BASE_URL||env.VERCEL_URL))}

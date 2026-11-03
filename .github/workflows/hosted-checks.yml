@@ -1,0 +1,39 @@
+name: Hosted app checks
+on:
+  push:
+    branches: [main]
+    paths: ['hosted/**', '.github/workflows/hosted-checks.yml']
+  pull_request:
+    paths: ['hosted/**', '.github/workflows/hosted-checks.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: hosted-checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: hosted
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: local_fixture_only
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: hosted/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm test
+      - run: npm run build:eve
+      - run: npm run build
+      - run: npm run test:http

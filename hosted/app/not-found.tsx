@@ -1,0 +1,1 @@
+export default function NotFound(){return <main><div className="panel"><h1>Page not found.</h1><p>Return to your workspace to create agents or find your saved results.</p><a className="primary" href="/">Open workspace</a></div></main>}

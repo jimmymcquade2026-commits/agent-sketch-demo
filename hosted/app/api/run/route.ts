@@ -1,11 +1,13 @@
 import {Client} from 'eve/client';
+import {executionEnabled} from '@/lib/runtime-policy';
 import {getVercelOidcToken} from '@vercel/oidc';
 import {connectionContext} from '@/lib/connections';
 import {database} from '@/lib/supabase';
 import {createRunHandler,QuotaError,type RunRecord} from '@/lib/run-service';
 export const maxDuration=180;
 export const POST=createRunHandler({
- configured:()=>Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL&&process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY&&process.env.AGENT_RUNTIME_SECRET&&(process.env.AGENT_BASE_URL||process.env.VERCEL_URL)),
+ configured:()=>executionEnabled(),
+ observe:event=>console.info(JSON.stringify({service:'agentsketch',...event})),
  store(token){
   const db=database(token);
   return {

@@ -1,0 +1,2 @@
+'use client';
+export default function ErrorPage({reset}:{reset:()=>void}){return <main><div className="panel"><span className="eyebrow">LET’S TRY AGAIN</span><h1>This page couldn’t load.</h1><p>Try loading it again. If you submitted a task, check Run history before starting another run.</p><div className="cardactions"><button className="primary" onClick={reset}>Try again</button><a className="secondary" href="/#history">Open run history</a></div></div></main>}
