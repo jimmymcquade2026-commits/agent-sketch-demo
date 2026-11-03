@@ -1,6 +1,7 @@
 import {database} from '@/lib/supabase';
 import {billingReady,stripeClient,adminDatabase,billingOrigin} from '@/lib/billing';
-import {checkoutItems,isPaidPlan,plans,LAUNCH_PRICE} from '@/lib/plans';
+import {checkoutItems,isPaidPlan} from '@/lib/plans';
+import {verifyCheckoutPrices} from '@/lib/checkout-prices';
 import {readLimitedJson} from '@/lib/run-service';
 export const maxDuration=60;
 export async function POST(request:Request){
@@ -26,19 +27,20 @@ export async function POST(request:Request){
   const latest=await db.from('entitlements').select('*').eq('user_id',user.id).single();if(latest.error)throw latest.error;entitlement=latest.data;
   if(entitlement.plan!=='free')return Response.json({error:'Your subscription was updated. Refresh your plan.'},{status:409});
   let customer=entitlement?.stripe_customer_id as string|undefined;
-  if(!customer){const created=await stripe.customers.create({email:user.email,metadata:{user_id:user.id}},{idempotencyKey:`agentsketch-customer-${user.id}`});customer=created.id;const {error}=await db.from('entitlements').upsert({user_id:user.id,stripe_customer_id:customer},{onConflict:'user_id'});if(error)throw error}
+  if(!customer){const created=await stripe.customers.create({email:user.email,metadata:{user_id:user.id}},{idempotencyKey:`agentsketch-customer-${user.id}`});customer=created.id;const {error}=await db.from('entitlements').update({stripe_customer_id:customer}).eq('user_id',user.id);if(error)throw error}
   const subscriptions=await stripe.subscriptions.list({customer,status:'all',limit:100});
   if(subscriptions.has_more||subscriptions.data.some(s=>['active','trialing','past_due','unpaid','incomplete','paused'].includes(s.status)))return Response.json({error:'An existing subscription needs attention. Use Manage subscription.'},{status:409});
   const launched=Boolean(entitlement?.launch_paid);
   const lineItems=checkoutItems(selected,launched);
-  for(const item of lineItems){const price=await stripe.prices.retrieve(item.price);const launch=price.id===process.env.STRIPE_LAUNCH_PRICE_ID;if(!price.active||price.currency!=='usd'||price.unit_amount!==(launch?LAUNCH_PRICE:plans[selected].monthlyPrice)*100||(launch?price.type!=='one_time':price.recurring?.interval!=='month'||price.recurring.interval_count!==1))throw Error('Configured price does not match the displayed offer.')}
+  async function checkPrices(id:string){const items=await stripe.checkout.sessions.listLineItems(id,{limit:100});if(items.has_more)throw Error('Unexpected checkout items');verifyCheckoutPrices(items.data,selected as 'starter'|'plus'|'scale',launched)}
   // Reuse any open session, including one for another tier: only one first-launch fee can be paid.
   const open=await stripe.checkout.sessions.list({customer,status:'open',limit:100});
   if(open.has_more)return Response.json({error:'Checkout needs review. Please try later.'},{status:409});
   const existing=open.data.find(s=>s.mode==='subscription'&&s.metadata?.pricing_version==='launch_v1');
-  if(existing?.metadata?.plan===selected&&existing.url)return Response.json({url:existing.url});
+  if(existing?.metadata?.plan===selected&&existing.url){await checkPrices(existing.id);return Response.json({url:existing.url})}
   for(const session of open.data.filter(s=>s.mode==='subscription'))await stripe.checkout.sessions.expire(session.id);
   const checkout=await stripe.checkout.sessions.create({mode:'subscription',customer,line_items:lineItems,client_reference_id:user.id,metadata:{user_id:user.id,plan:selected,pricing_version:'launch_v1'},subscription_data:{metadata:{user_id:user.id,plan:selected,pricing_version:'launch_v1'}},custom_text:{submit:{message:launched?'Your launch fee is already covered. This checkout starts a monthly subscription.':'Includes a one-time $69 workspace launch fee plus your first month. Only the monthly plan renews. No automatic usage overages.'}},success_url:`${billingOrigin()}/?billing=success`,cancel_url:`${billingOrigin()}/?billing=cancelled`,integration_identifier:'agentsketch_launch_fhwkbrpa'},{idempotencyKey:`agentsketch-launch-v1-${user.id}-${selected}-${launched}-${existing?.id||'new'}-${Math.floor(Date.now()/1800000)}`});
+  try{await checkPrices(checkout.id)}catch(error){await stripe.checkout.sessions.expire(checkout.id);throw error}
   return Response.json({url:checkout.url});
  }catch(error){const failure=error as {type?:string;code?:string;param?:string;statusCode?:number};console.error('Checkout failed',{type:failure.type,code:failure.code,param:failure.param,statusCode:failure.statusCode});return Response.json({error:'Checkout could not be started. Please try again later.'},{status:502})}
  finally{if(locked)await adminDatabase().rpc('release_checkout_lock',{p_user_id:user.id,p_key:lockKey})}
