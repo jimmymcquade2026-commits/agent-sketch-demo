@@ -31,9 +31,12 @@ Finish Stripe renewal/failure tests, launch policies/support, owner-selected mon
 1. Enter dedicated read-only GitHub, Slack, and Airtable tokens/resources in AgentSketch. Live source-grounded reads and disconnect behavior can then be checked. Plus and Pro are eligible; the existing legacy Pro remains eligible. Tokens must not be pasted into chat.
 2. Choose/control a sender domain and an email provider; verify DNS and connect SMTP for non-team signup delivery.
 3. Complete Stripe live onboarding only when ready; confirm tax obligations, support/business details, final policies, refund terms, and billing-risk handling before enabling real charges.
-4. Provide access to Stripe test-clock advancement or run the dashboard's simulated renewal and payment-failure flows. Browser Checkout is already verified.
+4. Enable Test Clocks Write (`billing_clock_write`) on the website's sandbox restricted Stripe key, or use the dashboard's simulated renewal/payment-failure flows. Clock retrieval works; advancement is rejected with Stripe 403 until this permission is available. Renewals, failed renewals, and execution of scheduled changes remain unverified. Catalog Prices Read is no longer needed after the checkout fix.
 5. Connect the existing Vercel agentsketch project to the repository using root hosted and review production branch/check gates. The GitHub tests are separate from deployment linking.
 6. Choose a spending alert threshold, monitoring destination, backup retention/recovery plan, and review Supabase leaked-password protection. No paid observability, backup upgrade, domain, or credit purchase was enabled.
 
 ## Launch pricing update
 $69 once per workspace, then Starter $9/month (100 attempts), Plus $19/month (400), or Pro $39/month (1,000), with server-enforced daily and monthly limits. Five free preview attempts per UTC calendar month. Existing Pro terms are preserved. See PRICING-COSTS.md for current provider costs, margins, checkout rules, and commercial-hosting requirements. No infrastructure upgrade or live payment activation was purchased.
+
+## November 3 sandbox acceptance
+Release 2bcd0a2b98add91f472466f9c7aa6d23984fcac8 fixes Checkout price verification for the existing restricted key and preserves the checkout lease when assigning a new customer. 33 unit tests, the production build, HTTP checks, and GitHub Actions run 41674643583 passed. Real bounded AI runs saved output on the deployed app. Hosted launch payment, portal upgrade, scheduled downgrade/cancellation, completed cancellation, and rejoin pricing were exercised against disposable sandbox data. See BILLING-ACCEPTANCE.md for exact evidence and remaining test-clock limits. No live charge or owner subscription change was made.
