@@ -21,7 +21,7 @@ Supabase password protection: https://supabase.com/docs/guides/auth/password-sec
 
 ## Owner controls in the app
 
-Sign in with the existing owner account and select **Launch checklist**. It shows prerequisite confirmations and up to 50 open billing alerts. The owner identity is matched against server-only OWNER_USER_ID after verifying the Supabase session. Other users cannot read or update this endpoint.
+Sign in with the existing owner account and select **Launch checklist**. It opens the next pending step, provides expandable instructions and account links, and lets you copy or download only the remaining setup. Technical configuration is shown separately from owner attestations. It also shows up to 50 open billing alerts. The owner identity is matched against server-only OWNER_USER_ID after verifying the Supabase session. Other users cannot read or update this endpoint.
 
 Refunds, disputes, and early fraud warnings are queued with event/charge/customer IDs only. If Stripe sends just a charge ID, resolve its customer in Stripe. Review the event and take any business/payment action in Stripe, then mark it reviewed in AgentSketch. Marking reviewed does not refund, cancel, release a hold, or change entitlements. The risk-response policy and actual provider risk-event acceptance still need owner approval/testing before real sales.
 
@@ -51,3 +51,24 @@ The current production release passed the checks below. Internal deployment and 
 - Browser verification showed the current pricing and sandbox-only labels. LAUNCH_APPROVED and BILLING_LIVE_ENABLED remain false.
 
 The remaining owner table above is the release blocker list. No unfinished external prerequisite has been marked complete.
+
+
+## Guided setup and provider refund acceptance
+
+The owner setup guide groups the remaining work into short numbered instructions, with the exact confirmation setting for each task. Begin with app connections; purchases can wait until the end. The downloaded worksheet includes no tokens, customer records, or account identifiers.
+
+A provider-generated $1 sandbox partial refund was issued against a prior disposable QA payment. Stripe reported success; its actual charge.refunded webhook reached the deployed app and created the expected review record. That test alert was reviewed. No real money moved and no existing customer subscription was changed. Provider-generated dispute and early-fraud-warning acceptance, and the business response policy, remain open; the earlier signed fixture checks cover their handler paths.
+
+The billing connector still exposes test-clock creation only; the website key still needs Test Clocks Write before renewal simulation can proceed. The Vercel team remains Hobby and has no linked Git project. No replacement project, paid upgrade, or permission expansion was created.
+
+### Decision worksheet
+
+- Legal operator name and location:
+- Monitored support email and intended audience:
+- Data retention and refund/cancellation decisions:
+- Sender domain and chosen SMTP provider (enter its credentials in Supabase):
+- Monthly AI budget, alert threshold and recipient:
+- Approved commercial hosting budget:
+- Backup retention, restore target and operator:
+
+Keep credentials out of this worksheet and out of chat. Approve applicable tax registrations before enabling live tax collection. Completing a worksheet is not acceptance of the live-checkout prerequisites.

@@ -2,6 +2,8 @@ import {database} from '@/lib/supabase';
 import {adminDatabase,billingBackendReady} from '@/lib/billing';
 import {isOwner,launchChecklist,liveCheckoutApproved} from '@/lib/launch-readiness';
 import {readLimitedJson} from '@/lib/run-service';
+import {executionEnabled} from '@/lib/runtime-policy';
+import {connectionsReady} from '@/lib/connections';
 import {z} from 'zod';
 export const dynamic='force-dynamic';
 const headers={'Cache-Control':'no-store'};
@@ -14,7 +16,7 @@ export async function GET(request:Request){
  try{const auth=await owner(request);if(auth.status!==200)return Response.json({error:'Owner access required.'},{status:auth.status,headers});
   const db=adminDatabase();const [alerts,health]=await Promise.all([db.from('billing_alerts').select('id,event_type,source_id,charge_id,customer_id,event_created,state').eq('state','open').order('event_created',{ascending:false}).limit(50),db.from('agents').select('id',{head:true}).limit(1)]);
   if(alerts.error||health.error)throw Error();
-  return Response.json({owner:true,checklist:launchChecklist(),approved:liveCheckoutApproved(),billingMode:process.env.STRIPE_SECRET_KEY?.includes('_live_')?'live':'test',billingConfigured:billingBackendReady(),alerts:alerts.data,alertsLimit:50,gitDeployConfirmed:process.env.GIT_DEPLOY_VERIFIED==='true'},{headers});
+  return Response.json({owner:true,checklist:launchChecklist(),approved:liveCheckoutApproved(),billingMode:process.env.STRIPE_SECRET_KEY?.includes('_live_')?'live':'test',billingConfigured:billingBackendReady(),executionConfigured:executionEnabled(),connectionsConfigured:connectionsReady(),alerts:alerts.data,alertsLimit:50,gitDeployConfirmed:process.env.GIT_DEPLOY_VERIFIED==='true'},{headers});
  }catch{return Response.json({error:'Launch status could not be loaded.'},{status:503,headers})}
 }
 export async function POST(request:Request){
