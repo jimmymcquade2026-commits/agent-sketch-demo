@@ -2,6 +2,7 @@ import {generateText} from 'ai';
 import {buildPrompt,MODEL,MAX_OUTPUT_TOKENS} from '@/lib/cost-policy';
 import {executionEnabled} from '@/lib/runtime-policy';
 import {connectionContext} from '@/lib/connections';
+import {publicGithubContext} from '@/lib/public-github';
 import {database} from '@/lib/supabase';
 import {createRunHandler,QuotaError,type RunRecord} from '@/lib/run-service';
 export const maxDuration=180;
@@ -19,7 +20,8 @@ export const POST=createRunHandler({
   };
  },
  async execute(agent,input){
-  const context=await connectionContext(agent.user_id,agent.apps);
+  const [privateContext,publicContext]=await Promise.all([connectionContext(agent.user_id,agent.apps),publicGithubContext(agent.apps,[input,agent.instructions,agent.knowledge].join('\n'))]);
+  const context=publicContext+privateContext;
   // One bounded Gateway generation; no tools, loops, or SDK retries that multiply spend.
   const result=await generateText({model:MODEL,prompt:buildPrompt(agent,input,context),maxOutputTokens:MAX_OUTPUT_TOKENS,maxRetries:0,abortSignal:AbortSignal.timeout(60000)});
   console.info(JSON.stringify({service:'agentsketch',event:'model_usage',inputTokens:result.usage.inputTokens,outputTokens:result.usage.outputTokens}));

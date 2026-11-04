@@ -1,9 +1,9 @@
 import {database} from '@/lib/supabase';
-import {billingReady,stripeClient,billingOrigin} from '@/lib/billing';
+import {billingBackendReady,stripeClient,billingOrigin} from '@/lib/billing';
 export async function POST(request:Request){
  const token=request.headers.get('authorization')?.match(/^Bearer (.+)$/)?.[1];
  if(!token)return Response.json({error:'Sign in first.'},{status:401});
- if(!billingReady())return Response.json({error:'Billing is not configured.'},{status:503});
+ if(!billingBackendReady())return Response.json({error:'Billing is not configured.'},{status:503});
  const db=database(token);const {data:{user},error}=await db.auth.getUser(token);
  if(error||!user)return Response.json({error:'Sign in again.'},{status:401});
  const {data}=await db.from('entitlements').select('stripe_customer_id').eq('user_id',user.id).maybeSingle();

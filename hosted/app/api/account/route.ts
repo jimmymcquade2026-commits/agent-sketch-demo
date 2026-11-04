@@ -1,6 +1,6 @@
 import {createClient} from '@supabase/supabase-js';
 import {database} from '@/lib/supabase';
-import {adminDatabase,billingReady,stripeClient} from '@/lib/billing';
+import {adminDatabase,billingBackendReady,stripeClient} from '@/lib/billing';
 import {readLimitedJson} from '@/lib/run-service';
 import {z} from 'zod';
 export const maxDuration=60;
@@ -24,7 +24,7 @@ export async function DELETE(request:Request){
  await verifier.auth.signOut({scope:'local'});
  try{
   const db=adminDatabase();const {data:ent,error}=await db.from('entitlements').select('stripe_customer_id').eq('user_id',auth.user.id).maybeSingle();if(error)throw error;
-  if(ent?.stripe_customer_id){if(!billingReady())return Response.json({error:'Billing verification is unavailable. Please try later.'},{status:503});const subs=await stripeClient().subscriptions.list({customer:ent.stripe_customer_id,status:'all',limit:100});if(subs.has_more||subs.data.some(s=>!['canceled','incomplete_expired'].includes(s.status)))return Response.json({error:'Cancel your subscription and wait until it has ended before deleting your account. You can manage it under Plans & usage.'},{status:409});}
+  if(ent?.stripe_customer_id){if(!billingBackendReady())return Response.json({error:'Billing verification is unavailable. Please try later.'},{status:503});const subs=await stripeClient().subscriptions.list({customer:ent.stripe_customer_id,status:'all',limit:100});if(subs.has_more||subs.data.some(s=>!['canceled','incomplete_expired'].includes(s.status)))return Response.json({error:'Cancel your subscription and wait until it has ended before deleting your account. You can manage it under Plans & usage.'},{status:409});}
   const {error:revokeError}=await db.auth.admin.signOut(auth.token,'global');if(revokeError)throw revokeError;
   const {error:deleteError}=await db.auth.admin.deleteUser(auth.user.id);if(deleteError)throw deleteError;
   return Response.json({deleted:true});

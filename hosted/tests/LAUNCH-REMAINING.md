@@ -1,5 +1,7 @@
 # Remaining launch work
 
+Current owner handoff: **LAUNCH-HANDOFF.md**. The in-app owner Launch checklist shows the remaining confirmations and billing alerts. Existing historical acceptance records below describe their respective releases; they are not evidence that all current external prerequisites are complete.
+
 ## Step 3: production email delivery — deferred by owner
 Confirmation and password-reset delivery to the owner were verified; the owner also completed password recovery successfully. Custom production email setup remains open. Choose a sender domain and email provider, configure domain verification and Supabase SMTP, then verify delivery to a non-team account. Do not treat current owner delivery as proof that public signup email works.
 
@@ -40,3 +42,6 @@ $69 once per workspace, then Starter $9/month (100 attempts), Plus $19/month (40
 
 ## November 3 sandbox acceptance
 Release 2bcd0a2b98add91f472466f9c7aa6d23984fcac8 fixes Checkout price verification for the existing restricted key and preserves the checkout lease when assigning a new customer. 33 unit tests, the production build, HTTP checks, and GitHub Actions run 41674643583 passed. Real bounded AI runs saved output on the deployed app. Hosted launch payment, portal upgrade, scheduled downgrade/cancellation, completed cancellation, and rejoin pricing were exercised against disposable sandbox data. See BILLING-ACCEPTANCE.md for exact evidence and remaining test-clock limits. No live charge or owner subscription change was made.
+
+## November 4 launch preparation
+Added the service-only billing risk review queue and owner-only review endpoint/panel; subscribed the sandbox webhook to refund/dispute/fraud events. Added live-checkout prerequisite gating while preserving cancellation/webhook access. Added credential-free scheduled production health checks, a backup/restore runbook, and a consolidated owner handoff. Restored public GitHub snapshot ingestion in the bounded hosted run path. Production dependency audit reports zero known vulnerabilities. External app credentials remain absent; public SMTP, live onboarding/tax/policies, test-clock advancement, commercial hosting/spend decisions, security-key replacement/password settings, Git linking, and a provider restore rehearsal still require the owner.

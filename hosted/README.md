@@ -45,6 +45,12 @@ Private sources require each customer's restricted provider token, entered in th
 
 ## Operations
 
+The owner can open `#launch` after sign-in to see the remaining launch confirmations and billing review queue. OWNER_USER_ID is server-only and matched against a verified Auth user. Refund/dispute/fraud events are persisted for manual review without changing charges or customer access. Other accounts cannot read this queue. See LAUNCH-HANDOFF.md for exact external setup and RECOVERY.md for a restore rehearsal.
+
+New live checkouts additionally require LAUNCH_APPROVED and every prerequisite flag from .env.example. Webhooks and subscription management use backend readiness independently, so a blocked launch cannot prevent an existing customer from canceling. Sandbox checkout remains available for tests. Approved policy/support links appear only after the owner configures them.
+
+The Production health workflow runs about every 30 minutes without credentials or model calls. Public GitHub references in a selected `github` source use a bounded snapshot of the first explicit github.com repository URL in the task/instructions/reference text; arbitrary sites and private repositories are not fetched by that adapter.
+
 Set `AGENT_RUNS_ENABLED=false` in Vercel and redeploy to pause new model work while keeping accounts, data exports, and existing history available. `/api/status` reflects this gate. `/api/health` checks database reachability without invoking the model or returning workspace data. Run outcome logs contain only event names and durations; model_usage records input/output token counts without source content. See `OPERATIONS.md` for incident, spending, and recovery procedures.
 
 ## Verification

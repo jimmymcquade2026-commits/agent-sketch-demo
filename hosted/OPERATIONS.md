@@ -25,3 +25,9 @@ Before public launch, inspect the Supabase plan's actual backup retention and re
 
 ## Billing incidents
 Keep BILLING_LIVE_ENABLED=false until live onboarding, legal/business details, and live-mode tests are complete. Stripe's webhook updates plan access; a checkout return page is not proof of payment. Retry failed webhook events after correcting the underlying error. The handler retrieves current subscription state to avoid a delayed event restoring a canceled subscription. Multiple subscription overlaps, refunds/disputes, and successful/failed renewals still require further acceptance testing before live launch.
+
+Refund, dispute, and early fraud warning events are now queued in the service-only billing_alerts table. Sign in as the configured owner and open Launch checklist to review them. Resolve unknown customers through the charge/event in Stripe; the app does not guess ownership from user-editable metadata. Take any refund, cancellation, dispute-evidence, or fraud response in Stripe under the approved business policy, then mark the alert reviewed. A duplicate provider delivery must not reopen a reviewed alert. No payment details or raw webhook payloads are stored in the queue. Real Stripe risk-event acceptance remains required; synthetic signed fixture coverage is reported separately.
+
+LAUNCH_APPROVED and all checklist attestations are required for new live checkout. These are explicit owner confirmations, not automatic evidence of external configuration. Blocking new live checkout does not disable webhook processing or the cancellation portal. See LAUNCH-HANDOFF.md for the required flags.
+
+The Production health GitHub workflow is scheduled about every 30 minutes and on changes to its monitor. Check Actions for failures and configure the owner's preferred notifications. No paid monitoring, destination email, or model-call probe was enabled. The workflow is best-effort and does not prove email, model, or payment availability.

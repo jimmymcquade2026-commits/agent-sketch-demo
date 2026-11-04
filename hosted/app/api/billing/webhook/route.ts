@@ -1,14 +1,17 @@
 import type Stripe from 'stripe';
 import {z} from 'zod';
-import {billingReady,stripeClient,adminDatabase} from '@/lib/billing';
+import {billingBackendReady,stripeClient,adminDatabase} from '@/lib/billing';
+import {billingRiskAlert} from '@/lib/billing-risk';
 import {planForPrice} from '@/lib/plans';
 export async function POST(request:Request){
- if(!billingReady())return Response.json({error:'Webhook is not configured.'},{status:503});
+ if(!billingBackendReady())return Response.json({error:'Webhook is not configured.'},{status:503});
  const signature=request.headers.get('stripe-signature');if(!signature)return Response.json({error:'Signature required.'},{status:400});
  const stripe=stripeClient();let event:Stripe.Event;
  try{event=stripe.webhooks.constructEvent(await request.text(),signature,process.env.STRIPE_WEBHOOK_SECRET!)}catch{return Response.json({error:'Invalid signature.'},{status:400})}
  const live=Boolean(process.env.STRIPE_SECRET_KEY?.includes('_live_'));
  if(event.livemode!==live)return Response.json({error:'Billing mode mismatch.'},{status:400});
+ const alert=billingRiskAlert(event);
+ if(alert){const {error}=await adminDatabase().from('billing_alerts').upsert(alert,{onConflict:'id',ignoreDuplicates:true});return error?Response.json({error:'Billing review event could not be saved. Retry this event.'},{status:500}):Response.json({received:true})}
  let subscriptionId:string|null=null;
  let paidCheckout:Stripe.Checkout.Session|null=null;
  if(event.type==='checkout.session.completed'||event.type==='checkout.session.async_payment_succeeded'){
