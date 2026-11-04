@@ -36,3 +36,18 @@ After the live Stripe configuration is ready, set BILLING_LIVE_ENABLED=true and 
 The Production health GitHub workflow checks /api/health and /api/status about every 30 minutes, can be run manually, and runs when its files change. It uses no credentials and makes no AI call. GitHub scheduling is best-effort. Review Actions failures and choose your GitHub notification settings; no email recipient or paid alert service was configured. The check covers database reachability and service configuration, not model quality, public email delivery, or payment delivery.
 
 The Hosted app checks workflow continues to audit dependencies, test, build, and run HTTP checks. Automatic Vercel deployment still requires the owner Git connection; until then source deployments are manual.
+
+## Verified release — November 4
+
+The current production release passed the checks below. Internal deployment and account identifiers are omitted from this handoff.
+
+- Hosted checks passed: 42 unit cases, TypeScript, production build, HTTP smoke checks, and production dependency audit (zero known vulnerabilities). [GitHub acceptance run](https://github.com/jimmymcquade2026-commits/agent-sketch-demo/actions/runs/41925848288).
+- [Production health workflow](https://github.com/jimmymcquade2026-commits/agent-sketch-demo/actions/runs/41925848210) passed against the deployed app; execution is configured and billing remains in test mode.
+- The production owner endpoint rejected a normal authenticated fixture account. An isolated local instance of the production build verified positive owner access and alert review using a disposable identity, without changing production configuration.
+- Signed sandbox refund, dispute, and early-fraud-warning fixtures reached the deployed webhook and created three review records. A customer could not read the table; duplicate webhook delivery preserved the reviewed state. These were signed fixtures, not provider-generated refunds or disputes. Actual vendor-event acceptance and owner risk policy remain open.
+- A deployed public-GitHub AI task completed; sanitized run_completed telemetry was recorded at 22:32:53 UTC. No private app credentials were used.
+- Database cleanup confirmed the disposable auth account, dependent runs, and all synthetic risk alerts were absent. Verification did not change existing customer billing data.
+- The production error/fatal query for the recent 15-minute window returned no records. This is a short-window observation, not a claim about all historical traffic.
+- Browser verification showed the current pricing and sandbox-only labels. LAUNCH_APPROVED and BILLING_LIVE_ENABLED remain false.
+
+The remaining owner table above is the release blocker list. No unfinished external prerequisite has been marked complete.
