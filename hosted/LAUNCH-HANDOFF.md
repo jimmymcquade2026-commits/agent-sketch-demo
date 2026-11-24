@@ -7,15 +7,15 @@ Updated November 4, 2026 (US Eastern). The app remains a Stripe sandbox preview.
 | Item | What is needed | Where to enter it |
 | --- | --- | --- |
 | Email | A sender domain you control, an SMTP provider, verified DNS, and signup/reset delivery to a non-team address | Supabase Auth email/SMTP settings |
-| Connections | Dedicated read-only GitHub Issues token/repository; Slack bot token/channel membership; Airtable token limited to a test base/table | AgentSketch Apps & connections, never chat |
-| Renewal testing | Test Clocks Write on the website's sandbox restricted Stripe key, or simulated clock advancement in the Stripe dashboard | Stripe sandbox API-key permissions |
+| Connections | GitHub Issues, Slack and Airtable each returned the expected value in a real agent run. Disconnect and reconnect acceptance still remains. | AgentSketch Apps & connections |
+| Renewal testing | Passed paid renewal, failed renewal, recovery, scheduled downgrade, and scheduled cancellation in Stripe sandbox. | tests/BILLING-ACCEPTANCE.md |
 | Commercial hosting | A commercial-eligible Vercel plan; approve its subscription before purchase | Existing Vercel agentsketch project/team |
 | Business and support | Legal operator identity/location, monitored support email, audience, privacy retention, terms, cancellation/refund rules, and applicable tax registrations | Review LAUNCH-POLICY-DRAFTS.md, publish approved policies, then configure their URLs |
 | Live billing | Business/bank onboarding, live restricted key/prices/signing secret, lifecycle and risk acceptance | Stripe and Vercel server-only environment variables |
 | AI spending | Fund shared Gateway usage, choose a monthly limit/alert threshold and notification destination, verify top-up behavior | Vercel AI Gateway and spending controls |
 | Recovery | Pick backup retention, choose a restore target, and complete a provider-level restore rehearsal | Supabase; see RECOVERY.md |
 | Account security | Review leaked-password protection and replace secrets previously pasted into chat | Supabase / Stripe; update Vercel secrets directly |
-| Git deployment | Connect the existing project to jimmymcquade2026-commits/agent-sketch-demo, production branch main, root hosted | Vercel Git settings; owner GitHub login connection is still needed |
+| Git deployment | Vercel is connected to jimmymcquade2026-commits/agent-sketch-demo with root directory hosted. | Existing Vercel project Git settings |
 
 Supabase password protection: https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection . The current advisor reports this disabled. The service-only billing_events and billing_alerts tables intentionally have no customer RLS policies.
 
@@ -35,7 +35,7 @@ After the live Stripe configuration is ready, set BILLING_LIVE_ENABLED=true and 
 
 The Production health GitHub workflow checks /api/health and /api/status about every 30 minutes, can be run manually, and runs when its files change. It uses no credentials and makes no AI call. GitHub scheduling is best-effort. Review Actions failures and choose your GitHub notification settings; no email recipient or paid alert service was configured. The check covers database reachability and service configuration, not model quality, public email delivery, or payment delivery.
 
-The Hosted app checks workflow continues to audit dependencies, test, build, and run HTTP checks. Automatic Vercel deployment still requires the owner Git connection; until then source deployments are manual.
+The Hosted app checks workflow continues to audit dependencies, test, build, and run HTTP checks. The existing AgentSketch project is connected to GitHub. Check the Vercel Deployments view for the build associated with each Git commit.
 
 ## Verified release — November 4
 
@@ -59,7 +59,7 @@ The owner setup guide groups the remaining work into short numbered instructions
 
 A provider-generated $1 sandbox partial refund was issued against a prior disposable QA payment. Stripe reported success; its actual charge.refunded webhook reached the deployed app and created the expected review record. That test alert was reviewed. No real money moved and no existing customer subscription was changed. Provider-generated dispute and early-fraud-warning acceptance, and the business response policy, remain open; the earlier signed fixture checks cover their handler paths.
 
-The billing connector still exposes test-clock creation only; the website key still needs Test Clocks Write before renewal simulation can proceed. The Vercel team remains Hobby and has no linked Git project. No replacement project, paid upgrade, or permission expansion was created.
+Sandbox renewal testing was completed after advancing the Stripe clock with the website's sandbox key. See tests/BILLING-ACCEPTANCE.md for the results. The Vercel team remains on Hobby.
 
 ### Decision worksheet
 
