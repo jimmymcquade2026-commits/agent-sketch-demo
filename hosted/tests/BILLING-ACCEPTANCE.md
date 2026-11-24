@@ -39,5 +39,16 @@ All Stripe activity used sandbox account acct_1T7NUlFuXgEJM2Ca, livemode=false. 
 - A second fresh disposable account completed a real AI preview on the patched release. Simultaneous Starter/Plus checkout requests left exactly one payable session and released the checkout lease. Through the website endpoint, verified first totals of Starter $78, Plus $88, and Pro $108, each containing exactly one $69 launch line and the selected monthly line. Same-plan retries reused their session. Tier changes expired the prior session. All unpaid QA sessions were expired after testing.
 - Both disposable Supabase accounts and dependent workspace records were removed after signing out. Temporary scripts and credential-bearing processes were removed/stopped. The canceled subscription and sandbox invoice/customer records remain as test audit data; the test clock is scheduled to expire automatically. The owner's legacy Pro remained active with launch already covered.
 
-### Remaining simulation blocker
+### Earlier simulation blocker (resolved below)
 The connector exposes test-clock creation but not advancement. The existing key can retrieve clocks through the installed SDK; advancing clock_1UXkUgFuXgEJM2CaGavAnNbP returned StripePermissionError 403 explicitly requiring Test Clocks Write (`billing_clock_write`). No permission was expanded. Renewal, failed-renewal, and future scheduled-change execution remain unverified. The clock/customer sandbox audit fixture expires automatically; no active subscription remains on it. Tax, live onboarding, and refund/dispute/fraud handling remain separate public-launch requirements.
+
+## Renewal and scheduled changes — November 23, 2026 (US Eastern)
+
+Verified on the deployed AgentSketch preview with one disposable test-clock customer in the Stripe sandbox. The fixture's launch fee was marked covered before checkout to isolate recurring billing; the $69 checkout flow is covered above.
+
+- Completed Plus sandbox Checkout and verified the application's Plus entitlement.
+- Advanced the clock. Stripe collected a $19 renewal invoice, AgentSketch recorded its `invoice.paid` webhook, and the workspace kept Plus.
+- Switched the portal to Stripe's failed-renewal test card and advanced again. Stripe's $19 renewal failed, and its `invoice.payment_failed` webhook changed access to Free. Retrying from the portal with the successful test card paid the invoice and restored Plus.
+- Scheduled a downgrade in the portal. The workspace stayed on Plus before period end. After advancing the clock, the $9 renewal was paid and the workspace switched to Starter.
+- Scheduled cancellation in the portal. Starter remained available until the scheduled date. After advancing the clock, Stripe canceled the subscription with no further invoice. The workspace returned to Free and retained its launch-paid status.
+- Removed the disposable app user. The canceled sandbox subscription and invoice history remain for audit. Live Stripe onboarding, tax, and provider-generated dispute and early fraud tests remain separate.
