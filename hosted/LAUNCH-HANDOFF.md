@@ -7,7 +7,7 @@ Updated November 4, 2026 (US Eastern). The app remains a Stripe sandbox preview.
 | Item | What is needed | Where to enter it |
 | --- | --- | --- |
 | Email | A sender domain you control, an SMTP provider, verified DNS, and signup/reset delivery to a non-team address | Supabase Auth email/SMTP settings |
-| Connections | GitHub Issues, Slack and Airtable each returned the expected value in a real agent run. Disconnect and reconnect acceptance still remains. | AgentSketch Apps & connections |
+| Connections | GitHub Issues, Slack, and Airtable each returned the expected value in a real agent run. Isolated disconnect tests blocked runs for all three providers, and removing the missing source restored execution. | AgentSketch Apps & connections |
 | Renewal testing | Passed paid renewal, failed renewal, recovery, scheduled downgrade, and scheduled cancellation in Stripe sandbox. | tests/BILLING-ACCEPTANCE.md |
 | Commercial hosting | A commercial-eligible Vercel plan; approve its subscription before purchase | Existing Vercel agentsketch project/team |
 | Business and support | Legal operator identity/location, monitored support email, audience, privacy retention, terms, cancellation/refund rules, and applicable tax registrations | Review LAUNCH-POLICY-DRAFTS.md, publish approved policies, then configure their URLs |
@@ -15,7 +15,7 @@ Updated November 4, 2026 (US Eastern). The app remains a Stripe sandbox preview.
 | AI spending | Fund shared Gateway usage, choose a monthly limit/alert threshold and notification destination, verify top-up behavior | Vercel AI Gateway and spending controls |
 | Recovery | Pick backup retention, choose a restore target, and complete a provider-level restore rehearsal | Supabase; see RECOVERY.md |
 | Account security | Review leaked-password protection and replace secrets previously pasted into chat | Supabase / Stripe; update Vercel secrets directly |
-| Git deployment | Vercel is connected to jimmymcquade2026-commits/agent-sketch-demo with root directory hosted. | Existing Vercel project Git settings |
+| Git deployment | Verified automatic production deployment from main using the hosted root directory and checked the deployed health endpoint. | Existing Vercel project Git settings |
 
 Supabase password protection: https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection . The current advisor reports this disabled. The service-only billing_events and billing_alerts tables intentionally have no customer RLS policies.
 
